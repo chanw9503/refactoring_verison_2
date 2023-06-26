@@ -57,21 +57,21 @@ function usd(aNumber) {
 }
 
 function totalVolumeCredit() {
-  let volumeCredits = 0;
+  let result = 0;
   for (let perf of invoices.performances) {
-    volumeCredits += volumeCreditsFor(perf);
+    result += volumeCreditsFor(perf);
   }
-  return volumeCredits;
+  return result;
 }
 
 function appleSauce() {
-  let totalAmount = 0;
+  let result = 0;
 
   for (let perf of invoices.performances) {
-    totalAmount += amountFor(perf);
+    result += amountFor(perf);
   }
 
-  return totalAmount;
+  return result;
 }
 
 function statement(invoice, plays) {
