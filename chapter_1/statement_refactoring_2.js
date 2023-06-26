@@ -1,7 +1,11 @@
 /**
- * 변수 명 변경
- * 매개변수의 역할이 뚜렷하지 않을 때는 부정관사(a/an)을 붙인다. (켄트 백에게 배운 방식)
- * 임시 변수를 질의 함수로 바꾸기
+ *
+ * volumeCredits 리팩토링 순서
+ * 1. 반복문 쪼개기로 변수 값을 누적시키는 부분을 분리
+ * 2. 문장 슬라이드 하기로 변수 초기화 문장을 변수 값 누적 코드 바로 앞으로 옮긴다.
+ * 3. 함수 추출하기로 적립 포인트 계산 부분을 별도 함수로 추출한다.
+ * 4. 변수 인라인하기로 volumeCredits 변수를 제거한다. ㅕㅛㅛㅛㅛㅛㅛ
+ *
  */
 
 const invoices = require('./invoices.json');
@@ -44,31 +48,34 @@ function volumeCreditsFor(aPerformance) {
   return result;
 }
 
-function format(aNumber) {
+function usd(aNumber) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 2,
-  }).format(aNumber);
+  }).format(aNumber / 100);
+}
+
+function totalVolumeCredit() {
+  let volumeCredits = 0;
+  for (let perf of invoices.performances) {
+    volumeCredits += volumeCreditsFor(perf);
+  }
+  return volumeCredits;
 }
 
 function statement(invoice, plays) {
   let totalAmount = 0;
-  let volumeCredits = 0;
   let result = `청구 내역 (고객명 : ${invoice.customer})\n`;
 
   for (let perf of invoice.performances) {
-    //포인트를 적립한다.
-    volumeCredits += volumeCreditsFor(perf);
-
     //청구 내역을 출력한다.
-    result += `${playFor(perf).name}: ${format(amountFor(perf) / 100)} (${
-      perf.audience
-    }석)\n`;
+    result += `${playFor(perf).name}: ${usd(amountFor(perf))} (${perf.audience}석)\n`;
     totalAmount += amountFor(perf);
   }
-  result += `총액: ${format(totalAmount / 100)}\n`;
-  result += `적립 포인트: ${volumeCredits}점\n`;
+
+  result += `총액: ${usd(totalAmount)}\n`;
+  result += `적립 포인트: ${totalVolumeCredit()}점\n`;
 
   return result;
 }
