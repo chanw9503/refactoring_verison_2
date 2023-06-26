@@ -1,56 +1,42 @@
-const invoices = require('./invoices.json');
-const plays = require('./plays.json');
+/**
+ *
+ * volumeCredits 리팩토링 순서
+ * 1. 반복문 쪼개기로 변수 값을 누적시키는 부분을 분리
+ * 2. 문장 슬라이드 하기로 변수 초기화 문장을 변수 값 누적 코드 바로 앞으로 옮긴다.
+ * 3. 함수 추출하기로 적립 포인트 계산 부분을 별도 함수로 추출한다.
+ * 4. 변수 인라인하기로 volumeCredits 변수를 제거한다. ㅕㅛㅛㅛㅛㅛㅛ
+ *
+ */
+
+import createStatementData from './createStatementData.js';
+import { createRequire } from 'module';
+import invoices from './invoices.js';
+import plays from './plays.js';
 
 function statement(invoice, plays) {
-  let totalAmount = 0;
-  let volumeCredits = 0;
-  let result = `청구 내역 (고객명 : ${invoice.customer})\n`;
+  return renderPlainText(createStatementData(invoice, plays));
+}
 
-  const format = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-  }).format;
+function renderPlainText(data) {
+  let result = `청구 내역 (고객명 : ${data.customer})\n`;
 
-  for (let perf of invoice.performances) {
-    const play = plays[perf.playID];
-    let thisAmount = 0;
-
-    switch (play.type) {
-      case 'tragedy': //비극
-        thisAmount = 40000;
-        if (perf.audience > 30) {
-          thisAmount += 1000 * (perf.audience - 30);
-        }
-        break;
-
-      case 'comedy': //희극
-        thisAmount = 30000;
-        if (perf.audience > 20) {
-          thisAmount += 10000 + 500 * (perf.audience - 20);
-        }
-        thisAmount += 300 * perf.audience;
-        break;
-      default:
-        throw new Error(`알 수 없는 장르 : ${play.type}`);
-    }
-
-    //포인트를 적립한다.
-    volumeCredits += Math.max(perf.audience - 30, 0);
-
-    //희극 관격 5명마다 추가 포인트를 제공한다.
-    if ('comedy' === play.type) volumeCredits += Math.floor(perf.audience / 5);
-
+  for (let perf of data.performances) {
     //청구 내역을 출력한다.
-    result += `${play.name}: ${format(thisAmount / 100)} (${perf.audience}석)\n`;
-    totalAmount += thisAmount;
+    result += `${perf.play.name}: ${usd(perf.amount)} (${perf.audience}석)\n`;
   }
-  result += `총액: ${format(totalAmount / 100)}\n`;
-  result += `적립 포인트: ${volumeCredits}점\n`;
 
+  result += `총액: ${usd(data.totalAmount)}\n`;
+  result += `적립 포인트: ${data.totalVolumeCredit}점\n`;
   return result;
 }
 
-const result = statement(invoices, plays);
+function usd(aNumber) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  }).format(aNumber / 100);
+}
 
+const result = statement(invoices, plays);
 console.log(result);

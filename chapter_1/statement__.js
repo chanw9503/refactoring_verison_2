@@ -1,30 +1,5 @@
-const invoices = require('./invoices');
-const plays = require('./plays');
-
-function amountFor(perf, play) {
-  let thisAmount = 0;
-
-  switch (play.type) {
-    case 'tragedy': //비극
-      thisAmount = 40000;
-      if (perf.audience > 30) {
-        thisAmount += 1000 * (perf.audience - 30);
-      }
-      break;
-
-    case 'comedy': //희극
-      thisAmount = 30000;
-      if (perf.audience > 20) {
-        thisAmount += 10000 + 500 * (perf.audience - 20);
-      }
-      thisAmount += 300 * perf.audience;
-      break;
-    default:
-      throw new Error(`알 수 없는 장르 : ${play.type}`);
-  }
-
-  return thisAmount;
-}
+const invoices = require('./invoices.json');
+const plays = require('./plays.json');
 
 function statement(invoice, plays) {
   let totalAmount = 0;
@@ -39,7 +14,26 @@ function statement(invoice, plays) {
 
   for (let perf of invoice.performances) {
     const play = plays[perf.playID];
-    let thisAmount = amountFor(perf, play);
+    let thisAmount = 0;
+
+    switch (play.type) {
+      case 'tragedy': //비극
+        thisAmount = 40000;
+        if (perf.audience > 30) {
+          thisAmount += 1000 * (perf.audience - 30);
+        }
+        break;
+
+      case 'comedy': //희극
+        thisAmount = 30000;
+        if (perf.audience > 20) {
+          thisAmount += 10000 + 500 * (perf.audience - 20);
+        }
+        thisAmount += 300 * perf.audience;
+        break;
+      default:
+        throw new Error(`알 수 없는 장르 : ${play.type}`);
+    }
 
     //포인트를 적립한다.
     volumeCredits += Math.max(perf.audience - 30, 0);
