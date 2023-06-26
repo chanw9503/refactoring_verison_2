@@ -12,7 +12,7 @@ function playFor(aPerformance) {
 }
 
 function amountFor(aPerformance, play) {
-  let resultyu = 0;
+  let result = 0;
 
   switch (play.type) {
     case 'tragedy': //비극
