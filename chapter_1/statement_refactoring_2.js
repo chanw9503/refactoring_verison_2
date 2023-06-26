@@ -14,21 +14,45 @@ const plays = require('./plays.json');
 function statement(invoice, plays) {
   const statementData = {};
   statementData.customer = invoice.customer;
+  statementData.performances = invoice.performances.map(enrichPerformance);
   return renderPlainText(statementData, invoice, plays);
 }
+function enrichPerformance(aPerformance) {
+  const result = Object.assign({}, aPerformance);
+  result.play = playFor(result);
+  result.amount = amountFor(result);
+  return result;
+}
 
-function renderPlainText(data, invoice, plays) {
+function renderPlainText(data, plays) {
   let result = `청구 내역 (고객명 : ${data.customer})\n`;
 
-  for (let perf of invoice.performances) {
+  for (let perf of data.performances) {
     //청구 내역을 출력한다.
-    result += `${playFor(perf).name}: ${usd(amountFor(perf))} (${perf.audience}석)\n`;
+    result += `${perf.play.name}: ${usd(perf.amount)} (${perf.audience}석)\n`;
   }
 
   result += `총액: ${usd(appleSauce())}\n`;
   result += `적립 포인트: ${totalVolumeCredit()}점\n`;
-
   return result;
+
+  function totalVolumeCredit() {
+    let result = 0;
+    for (let perf of data.performances) {
+      result += volumeCreditsFor(perf);
+    }
+    return result;
+  }
+
+  function appleSauce() {
+    let result = 0;
+
+    for (let perf of data.performances) {
+      result += amountFor(perf);
+    }
+
+    return result;
+  }
 }
 
 function playFor(aPerformance) {
@@ -38,7 +62,7 @@ function playFor(aPerformance) {
 function amountFor(aPerformance) {
   let result = 0;
 
-  switch (playFor(aPerformance).type) {
+  switch (aPerformance.play.type) {
     case 'tragedy': //비극
       result = 40000;
       if (aPerformance.audience > 30) {
@@ -54,7 +78,7 @@ function amountFor(aPerformance) {
       result += 300 * aPerformance.audience;
       break;
     default:
-      throw new Error(`알 수 없는 장르 : ${playFor(aPerformance).type}`);
+      throw new Error(`알 수 없는 장르 : ${aPerformance.play.type}`);
   }
 
   return result;
@@ -63,7 +87,7 @@ function amountFor(aPerformance) {
 function volumeCreditsFor(aPerformance) {
   let result = 0;
   result += Math.max(aPerformance.audience - 30, 0);
-  if ('comedy' === playFor(aPerformance).type)
+  if ('comedy' === aPerformance.play.type)
     result += Math.floor(aPerformance.audience / 5);
   return result;
 }
@@ -74,24 +98,6 @@ function usd(aNumber) {
     currency: 'USD',
     minimumFractionDigits: 2,
   }).format(aNumber / 100);
-}
-
-function totalVolumeCredit() {
-  let result = 0;
-  for (let perf of invoices.performances) {
-    result += volumeCreditsFor(perf);
-  }
-  return result;
-}
-
-function appleSauce() {
-  let result = 0;
-
-  for (let perf of invoices.performances) {
-    result += amountFor(perf);
-  }
-
-  return result;
 }
 
 const result = statement(invoices, plays);
