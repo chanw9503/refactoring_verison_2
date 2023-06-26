@@ -15,7 +15,27 @@ function statement(invoice, plays) {
   const statementData = {};
   statementData.customer = invoice.customer;
   statementData.performances = invoice.performances.map(enrichPerformance);
+  statementData.totalAmount = totalAmount(statementData);
+  statementData.totalVolumeCredit = totalVolumeCredit(statementData);
+
   return renderPlainText(statementData, invoice, plays);
+
+  function totalVolumeCredit(data) {
+    let result = 0;
+    for (let perf of data.performances) {
+      result += perf.volumeCredits;
+    }
+    return result;
+  }
+
+  function totalAmount(data) {
+    let result = 0;
+    for (let perf of data.performances) {
+      result += perf.amount;
+    }
+
+    return result;
+  }
 }
 function enrichPerformance(aPerformance) {
   const result = Object.assign({}, aPerformance);
@@ -33,17 +53,9 @@ function renderPlainText(data, plays) {
     result += `${perf.play.name}: ${usd(perf.amount)} (${perf.audience}석)\n`;
   }
 
-  result += `총액: ${usd(appleSauce())}\n`;
-  result += `적립 포인트: ${totalVolumeCredit()}점\n`;
+  result += `총액: ${usd(data.totalAmount)}\n`;
+  result += `적립 포인트: ${data.totalVolumeCredit}점\n`;
   return result;
-
-  function totalVolumeCredit() {
-    let result = 0;
-    for (let perf of data.performances) {
-      result += perf.volumeCredits;
-    }
-    return result;
-  }
 
   function appleSauce() {
     let result = 0;
