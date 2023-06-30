@@ -17,25 +17,7 @@ class PerformanceCalculator {
   }
 
   get amount() {
-    let result = 0;
-
-    switch (this.play.type) {
-      case 'tragedy': //비극
-        throw '오류 발생';
-        ㄹㅎㅎㅎㅎㄹ;
-
-      case 'comedy': //희극
-        result = 30000;
-        if (this.performances.audience > 20) {
-          result += 10000 + 500 * (this.performances.audience - 20);
-        }
-        result += 300 * this.performances.audience;
-        break;
-      default:
-        throw new Error(`알 수 없는 장르 : ${this.performances.play.type}`);
-    }
-
-    return result;
+    throw new Error('서브클래스에서 처리하도록 설계되었습니다.');
   }
 
   get volumeCredits() {
@@ -54,7 +36,16 @@ class TragedyCalculator extends PerformanceCalculator {
   }
 }
 
-class ComedyCalculator extends PerformanceCalculator {}
+class ComedyCalculator extends PerformanceCalculator {
+  get amount() {
+    result = 30000;
+    if (this.performances.audience > 20) {
+      result += 10000 + 500 * (this.performances.audience - 20);
+    }
+    result += 300 * this.performances.audience;
+    return result;
+  }
+}
 
 export default function createStatementData(invoice, plays) {
   const result = {};
