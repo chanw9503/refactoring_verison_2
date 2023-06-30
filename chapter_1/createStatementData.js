@@ -1,5 +1,15 @@
 import plays from './plays.js';
 
+function createPerformanceCalculator(aPerformance, aPlay) {
+  switch (aPlay.type) {
+    case 'tragedy':
+      return new TragedyCalculator(aPerformance, aPlay);
+    case 'comedy':
+      return new ComedyCalculator(aPerformance, aPlay);
+    default:
+      throw new Error(`알 수 없는 장르: ${aPlay.type}`);
+  }
+}
 class PerformanceCalculator {
   constructor(aPerformance, aPlay) {
     this.performances = aPerformance;
@@ -11,11 +21,8 @@ class PerformanceCalculator {
 
     switch (this.play.type) {
       case 'tragedy': //비극
-        result = 40000;
-        if (this.performances.audience > 30) {
-          result += 1000 * (this.performances.audience - 30);
-        }
-        break;
+        throw '오류 발생';
+        ㄹㅎㅎㅎㅎㄹ;
 
       case 'comedy': //희극
         result = 30000;
@@ -38,10 +45,16 @@ class PerformanceCalculator {
     return result;
   }
 }
-
-function createPerformanceCalculator(aPerformance, aPlay) {
-  return new PerformanceCalculator(aPerformance, aPlay);
+class TragedyCalculator extends PerformanceCalculator {
+  get amount() {
+    let result = 40000;
+    if (this.performances.audience > 30) {
+      result += 1000 * (this.performances.audience - 30);
+    }
+  }
 }
+
+class ComedyCalculator extends PerformanceCalculator {}
 
 export default function createStatementData(invoice, plays) {
   const result = {};
