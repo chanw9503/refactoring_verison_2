@@ -1,5 +1,12 @@
 import plays from './plays.js';
 
+class PerformanceCalculator {
+  constructor(aPerformance, aPlay) {
+    this.performances = aPerformance;
+    this.play = aPlay;
+  }
+}
+
 export default function createStatementData(invoice, plays) {
   const result = {};
   result.customer = invoice.customer;
@@ -9,44 +16,19 @@ export default function createStatementData(invoice, plays) {
 
   return result;
 
-  function totalVolumeCredit(data) {
-    return data.performances.reduce((total, p) => total + p.volumeCredits, 0);
+  function enrichPerformance(aPerformance) {
+    const caclulator = new PerformanceCalculator(aPerformance, playFor(aPerformance));
+    const result = Object.assign({}, aPerformance);
+    result.play = caclulator.play;
+    result.amount = amountFor(result);
+    result.volumeCredits = volumeCreditsFor(result);
+    return result;
   }
-
-  function totalAmount(data) {
-    return data.performances.reduce((total, p) => total + p.amount, 0);
-  }
-}
-
-function enrichPerformance(aPerformance) {
-  const result = Object.assign({}, aPerformance);
-  result.play = playFor(result);
-  result.amount = amountFor(result);
-  result.volumeCredits = volumeCreditsFor(result);
-  return result;
-}
-
-function appleSauce() {
-  let result = 0;
-
-  for (let perf of data.performances) {
-    result += amountFor(perf);
-  }
-
-  return result;
 }
 
 function playFor(aPerformance) {
   return plays[aPerformance.playID];
 }
-function volumeCreditsFor(aPerformance) {
-  let result = 0;
-  result += Math.max(aPerformance.audience - 30, 0);
-  if ('comedy' === aPerformance.play.type)
-    result += Math.floor(aPerformance.audience / 5);
-  return result;
-}
-
 function amountFor(aPerformance) {
   let result = 0;
 
@@ -70,4 +52,20 @@ function amountFor(aPerformance) {
   }
 
   return result;
+}
+
+function volumeCreditsFor(aPerformance) {
+  let result = 0;
+  result += Math.max(aPerformance.audience - 30, 0);
+  if ('comedy' === aPerformance.play.type)
+    result += Math.floor(aPerformance.audience / 5);
+  return result;
+}
+
+function totalVolumeCredit(data) {
+  return data.performances.reduce((total, p) => total + p.volumeCredits, 0);
+}
+
+function totalAmount(data) {
+  return data.performances.reduce((total, p) => total + p.amount, 0);
 }
