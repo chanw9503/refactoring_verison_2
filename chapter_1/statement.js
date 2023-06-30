@@ -9,8 +9,8 @@
  */
 
 import createStatementData from './createStatementData.js';
-// import invoices from './invoices.js';
-// import plays from './plays.js';
+import invoices from './invoices.js';
+import plays from './plays.js';
 
 function statement(invoice, plays) {
   return renderPlainText(createStatementData(invoice, plays));
@@ -22,7 +22,6 @@ function renderPlainText(data) {
     //청구 내역을 출력한다.
     result += `${perf.play.name}: ${usd(perf.amount)} (${perf.audience}석)\n`;
   }
-  yy;
 
   result += `총액: ${usd(data.totalAmount)}\n`;
   result += `적립 포인트: ${data.totalVolumeCredit}점\n`;
@@ -58,5 +57,5 @@ function usd(aNumber) {
   }).format(aNumber / 100);
 }
 
-// const result = statement(invoices, plays);
-// console.log(result);
+const result = statement(invoices, plays);
+console.log(result);
